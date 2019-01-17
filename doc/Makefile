@@ -35,15 +35,9 @@ ifeq ($(BREW),)
 	TEXI2DVI = texi2dvi
 	TEXI2HTML = makeinfo --html
 	TEXI2PDF = texi2pdf
-	# Ubuntu: qtchooser seems broken for qhelpgenerator, so /usr/bin/qhelpgenerator
-	# doesn't work. Locate it directly. Prefer qcollectiongenerator because that separate
-	# program is needed on Qt prior to Qt 5.12.
-	ifneq ($(wildcard /usr/lib/x86_64-linux-gnu/qt5/bin/qcollectiongenerator),)
-		QHELPGENERATOR = /usr/lib/x86_64-linux-gnu/qt5/bin/qcollectiongenerator
-	else ifneq ($(wildcard /usr/lib/x86_64-linux-gnu/qt5/bin/qhelpgenerator),)
-		QHELPGENERATOR = /usr/lib/x86_64-linux-gnu/qt5/bin/qhelpgenerator
-	# The trailing space here is significant on Ubuntu Xenial! (GNU Make 4.1)
-	else ifneq ($(shell which qcollectiongenerator 2>/dev/null ))
+	# Prefer qcollectiongenerator because that is needed on Qt prior to Qt 5.12; in Qt 5.12
+	# it was merged with the already-existing qhelpgenerator
+	ifneq ($(shell which qcollectiongenerator 2>/dev/null),)
 		QHELPGENERATOR = qcollectiongenerator
     else
 		QHELPGENERATOR = qhelpgenerator
@@ -55,10 +49,10 @@ else
 	TEXI2HTML = $(BREW_TEXINFO)/bin/makeinfo --html
 	TEXI2PDF = $(BREW_TEXINFO)/bin/texi2pdf
 	BREW_QT = $(shell brew --prefix qt)
-	ifeq ($(wildcard $(BREW_QT)/bin/qhelpgenerator),)
-		QHELPGENERATOR = $(BREW_QT)/bin/qcollectiongenerator
-	else
+	ifneq ($(wildcard $(BREW_QT)/bin/qhelpgenerator),)
 		QHELPGENERATOR = $(BREW_QT)/bin/qhelpgenerator
+	else
+		QHELPGENERATOR = $(BREW_QT)/bin/qcollectiongenerator
 	endif
 endif
 
